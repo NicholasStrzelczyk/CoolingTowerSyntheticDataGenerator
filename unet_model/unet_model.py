@@ -17,7 +17,7 @@ class UNet(nn.Module):
         self.up2 = (Up(512, 256))
         self.up3 = (Up(256, 128))
         self.up4 = (Up(128, 64))
-        self.outc = (OutConv(64, 3))
+        self.outc = (OutConv(64, 1))
         self.softmax = nn.Softmax()
 
     def forward(self, x):

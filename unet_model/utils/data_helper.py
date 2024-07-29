@@ -1,11 +1,8 @@
 import os
 import sys
 
-import cv2
-import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
 
 
 def data_to_xy(data, seperator=" "):
@@ -35,27 +32,14 @@ def get_data_from_list(list_path, split=None):
     return x1, y1, x2, y2
 
 
-def estimate_class_weight(y_set, resize_shape):
-    ratio_list = []
-    for path in tqdm(np.unique(y_set), desc='estimating class weights'):
-        tgt = cv2.resize(cv2.imread(path, cv2.IMREAD_GRAYSCALE), resize_shape)
-        tgt = cv2.normalize(tgt, dst=None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-        tgt[tgt >= 0.5] = 1
-        tgt[tgt < 0.5] = 0
-        _, count = np.unique(tgt, return_counts=True)
-        ratio_list.append(float(count[1] / count[0]))
-    factor = np.round(np.mean(ratio_list), decimals=4)
-    return 1.0 - factor
-
-
 def get_os_dependent_paths(model_ver, partition):
     assert (partition == 'train' or partition == 'test')
     if sys.platform == 'darwin':  # mac
-        data_dir = "/Users/nick_1/Bell_5G_Data/1080_snapshots"
+        data_dir = "/Users/nick_1/Bell_5G_Data/synth_datasets"
         list_path = os.path.join(data_dir, "{}/list_{}.txt".format(partition, sys.platform))
         save_path = "./model_{}".format(model_ver)
     else:  # windows
-        data_dir = "C:\\Users\\NickS\\UWO_Summer_Research\\Bell_5G_Data\\1080_snapshots"
+        data_dir = "C:\\Users\\NickS\\UWO_Summer_Research\\Bell_5G_Data\\synth_datasets"
         list_path = os.path.join(data_dir, "{}\\list_{}.txt".format(partition, sys.platform))
         save_path = ".\\model_{}".format(model_ver)
     return list_path, save_path

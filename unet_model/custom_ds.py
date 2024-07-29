@@ -4,8 +4,7 @@ from torch.utils.data import Dataset
 
 
 class CustomDS(Dataset):
-    def __init__(self, x_set, y_set, resize_shape=(1024, 1024), img_transpose=None):
-        self.img_transpose = img_transpose  # (2, 0, 1) for rgb
+    def __init__(self, x_set, y_set, resize_shape=None):
         self.resize_shape = resize_shape
         self.x = x_set
         self.y = y_set
@@ -15,15 +14,23 @@ class CustomDS(Dataset):
 
     def __getitem__(self, idx):
         image = cv2.imread(self.x[idx], cv2.IMREAD_COLOR)
-        target = cv2.imread(self.y[idx], cv2.IMREAD_COLOR)
-        image, target = self.preprocess(image, target)
-        return image, target
+        target = cv2.imread(self.y[idx], cv2.IMREAD_GRAYSCALE)
 
-    def preprocess(self, img, tgt):
         if self.resize_shape is not None:
-            img = cv2.resize(img, self.resize_shape)
-            tgt = cv2.resize(tgt, self.resize_shape)
-        if self.img_transpose is not None:
-            img = np.transpose(img, axes=self.img_transpose)
-            tgt = np.transpose(tgt, axes=self.img_transpose)
-        return img, tgt
+            image = cv2.resize(image, self.resize_shape)
+            target = cv2.resize(target, self.resize_shape)
+
+        image = np.transpose(image, axes=(2, 0, 1))  # transpose RGB image to be (C, H, W) instead of (H, W, C)
+        target = np.expand_dims(target, axis=0)  # add dimension for where channels normally are
+
+        # normalize values from [0, 255] to [0, 1]
+        image = image.astype(np.float32)
+        target = target.astype(np.float32)
+        image *= (1 / 255.0)
+        target *= (1 / 255.0)
+
+        # ensure that the target is still binary after previous operations
+        target[target < 0.5] = 0
+        target[target >= 0.5] = 1
+
+        return image, target

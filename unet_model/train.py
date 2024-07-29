@@ -119,7 +119,7 @@ if __name__ == '__main__':
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)
 
     # run torch summary report
-    summary(model, input_size=(1, 512, 512))
+    summary(model, input_size=(3, resize_shape[0], resize_shape[1]))
 
     # train model
     train(model, loss_fn, optimizer, scheduler, train_loader, val_loader, n_epochs, device)
