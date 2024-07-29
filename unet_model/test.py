@@ -8,9 +8,8 @@ from torch.utils.data import DataLoader
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
 from tqdm import tqdm
 
-from custom_ds import BellGrayDS
-from custom_loss import FocalBCELoss
-from custom_model import UNetGrayscale
+from custom_ds import CustomDS
+from unet_model import UNet
 from utils.data_helper import get_data_from_list, get_os_dependent_paths
 
 
@@ -70,26 +69,23 @@ def test(model, loss_fn, test_loader, device):
 if __name__ == '__main__':
     # hyperparameters
     model_version = 3
-    resize_shape = (512, 512)
+    resize_shape = (1024, 1024)
     list_path, save_path = get_os_dependent_paths(model_version, partition='test')
     weights_file = os.path.join(save_path, "model_{}_weights.pth".format(model_version))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # set up dataset(s)
     x_test, y_test, _, _ = get_data_from_list(list_path, split=None)
-    test_ds = BellGrayDS(x_test, y_test, resize_shape=resize_shape)
+    test_ds = CustomDS(x_test, y_test, resize_shape=resize_shape)
     test_loader = DataLoader(test_ds, batch_size=1, shuffle=False)
 
     # compile model
-    model = UNetGrayscale()
+    model = UNet()
     model.load_state_dict(torch.load(weights_file, map_location=device))
     model.to(device=device)
 
     # init model training parameters
-    # class_weight_alpha = estimate_class_weight(y_test, resize_shape=resize_shape)
-    # print("Class weight alpha: {}".format(class_weight_alpha))
-    class_weight_alpha = 0.75
-    loss_fn = FocalBCELoss(alpha=class_weight_alpha, gamma=2.0)
+    loss_fn = torch.nn.BCELoss()
 
     # test model
     test(model, loss_fn, test_loader, device)

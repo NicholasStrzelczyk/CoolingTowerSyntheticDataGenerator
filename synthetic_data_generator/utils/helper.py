@@ -1,10 +1,11 @@
+import csv
 from random import randint
 
 import cv2
 import numpy as np
 import pandas as pd
 
-from synth_data_maker.utils.constants import *
+from synthetic_data_generator.utils.constants import *
 
 
 # ----- Utility Methods ----- #
@@ -14,7 +15,14 @@ def vig_strength_to_growth_percent(val):
 
 
 def growth_percent_to_vig_strength(val):
-	return round(min_vignette_strength + (1.0 - (0.01 * val)) * (max_vignette_strength - min_vignette_strength), 2)
+	return round(min_vignette_strength + ((1.0 - (0.01 * val)) * (max_vignette_strength - min_vignette_strength)), 2)
+
+
+def get_growth_bounds(num_days, plusminus_percent=3.0):
+	avg_growth_percent = round(100.0 / num_days, 1)
+	max_val = avg_growth_percent + plusminus_percent
+	min_val = avg_growth_percent - plusminus_percent
+	return min_val, max_val
 
 
 def gen_dust_variables(
@@ -47,6 +55,18 @@ def gen_dust_variables(
 	}
 
 
+def timeline_to_csv(timeline_data, scenario_num, data_dir):
+	save_path = os.path.join(data_dir, "scenario_{}".format(scenario_num), 'timeline.csv')
+	open(save_path, 'w+').close()  # overwrite/ make new blank file
+	with open(save_path, 'a', encoding='UTF8', newline='') as file:
+		writer = csv.writer(file)
+		if scenario_num <= 2:
+			writer.writerow(csv_headers_sc1_sc2)
+		else:
+			writer.writerow(csv_headers_sc3_sc4)
+		writer.writerows(timeline_data)
+
+
 def interpret_sc1_sc2_csv(timeline_file_path):
 	df = pd.read_csv(timeline_file_path)
 	total_days = df['day'].values[-1]
@@ -70,27 +90,31 @@ def interpret_sc1_sc2_csv(timeline_file_path):
 	}
 
 
-def interpret_sc3_sc4_csv(timeline_file_path):  # NOT DONE YET!
+def interpret_sc3_sc4_csv(timeline_file_path):
+	csv_dicts = []
 	df = pd.read_csv(timeline_file_path)
 	total_days = df['day'].values[-1]
-	growths = df['growth_percent'].values.tolist()
-	dust_rows = df['dust_rows'].values.tolist()
-	dust_cols = df['dust_cols'].values.tolist()
-	dust_x_vals = df['dust_x'].values.tolist()
-	dust_y_vals = df['dust_y'].values.tolist()
 
-	vignettes = []
-	for g in growths:
-		vignettes.append(growth_percent_to_vig_strength(g))
+	for i in range(1, 4):
+		growths = df['growth_percent_{}'.format(i)].values.tolist()
+		dust_rows = df['dust_rows_{}'.format(i)].values.tolist()
+		dust_cols = df['dust_cols_{}'.format(i)].values.tolist()
+		dust_x_vals = df['dust_x_{}'.format(i)].values.tolist()
+		dust_y_vals = df['dust_y_{}'.format(i)].values.tolist()
 
-	return {
-		'total_days': total_days,
-		'vignettes': vignettes,
-		'dust_rows': dust_rows,
-		'dust_cols': dust_cols,
-		'dust_x_vals': dust_x_vals,
-		'dust_y_vals': dust_y_vals,
-	}
+		vignettes = []
+		for g in growths:
+			vignettes.append(growth_percent_to_vig_strength(g))
+
+		csv_dicts.append({
+			'total_days': total_days,
+			'vignettes': vignettes,
+			'dust_rows': dust_rows,
+			'dust_cols': dust_cols,
+			'dust_x_vals': dust_x_vals,
+			'dust_y_vals': dust_y_vals,
+		})
+	return csv_dicts
 
 
 def make_dust_region(dust_img, rows, cols):
@@ -190,30 +214,15 @@ def denoise_to_binary(img):
 	return result
 
 
-def gen_synth_label(day, save_dir_path, dust_cloud, pt1, pt2):
-	label_img = np.zeros((1080, 1920, 3), dtype=np.uint8)  # blank image
-	label_img[pt1[1]:pt2[1], pt1[0]:pt2[0]] = dust_cloud  # insert dust cloud
-	label_img = denoise_to_binary(label_img)  # denoise & convert to b/w
-	save_path = os.path.join(save_dir_path, 'LABEL_day_{}.png'.format(day))
-	cv2.imwrite(save_path, label_img.astype(np.uint8))  # save synthetic label
-
-
-def gen_synth_image(src_path, save_path, dust_cloud, pt1, pt2):
-	image = cv2.imread(src_path, cv2.IMREAD_COLOR)  # read raw img file
-	image_slice = image[pt1[1]:pt2[1], pt1[0]:pt2[0]]  # cut out RoI for modification
-	image_slice = apply_synthetic_dust_basic(image_slice, dust_cloud)  # apply dust cloud to RoI
-	image[pt1[1]:pt2[1], pt1[0]:pt2[0]] = image_slice  # re-insert edited RoI
-	cv2.imwrite(save_path, image.astype(np.uint8))  # save synthetic img
-
-
-def gen_hourly_synth_images(day, src_dir_path, save_dir_path, dust_cloud, pt1, pt2):
-	for hour in hour_list:
-		raw_img_name = 'day_{}_{}.png'.format(day, hour)
-		raw_img_path = os.path.join(src_dir_path, raw_img_name)
-		synth_img_path = os.path.join(save_dir_path, 'SYNTH_{}'.format(raw_img_name))
-
-		if os.path.isfile(raw_img_path):  # skip over missing data
-			gen_synth_image(raw_img_path, synth_img_path, dust_cloud, pt1, pt2)
-
-
-
+def get_scenario_paths(base_dir, partition, scenario):
+	src_dir = os.path.join(base_dir, 'src_images')  # where raw images are stored
+	dest_dir = os.path.join(base_dir, '{}/scenario_{}'.format(partition.value, scenario))
+	csv_file_path = os.path.join(dest_dir, 'timeline.csv')  # timeline csv file location
+	img_dir_path = os.path.join(dest_dir, 'images')  # location to save synth images
+	label_dir_path = os.path.join(dest_dir, 'targets')  # location to save synth labels
+	return {
+		'src': src_dir,
+		'csv': csv_file_path,
+		'img': img_dir_path,
+		'label': label_dir_path
+	}

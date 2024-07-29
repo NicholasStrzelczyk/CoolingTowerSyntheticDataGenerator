@@ -4,13 +4,12 @@ from datetime import datetime
 import torch
 from torch import optim
 from torch.utils.data import DataLoader
-from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall, Dice
+from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
 from torchsummary import summary
 from tqdm import tqdm
 
-from custom_ds import BellGrayDS
-from custom_loss import FocalBCELoss
-from custom_model import UNetGrayscale
+from custom_ds import CustomDS
+from unet_model import UNet
 from utils.data_helper import get_os_dependent_paths, get_data_from_list, print_metric_plots
 
 
@@ -99,26 +98,23 @@ if __name__ == '__main__':
     batch_sz = 2  # batch size (2 works best on gpu)
     lr = 0.0001  # learning rate
     wd = 0.00001  # weight decay
-    resize_shape = (512, 512)
+    resize_shape = (1024, 1024)
     list_path, save_path = get_os_dependent_paths(model_version, partition='train')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # set up dataset(s)
     x_train, y_train, x_val, y_val = get_data_from_list(list_path, split=0.2)
-    train_ds = BellGrayDS(x_train, y_train, resize_shape=resize_shape)
-    val_ds = BellGrayDS(x_val, y_val, resize_shape=resize_shape)
+    train_ds = CustomDS(x_train, y_train, resize_shape=resize_shape)
+    val_ds = CustomDS(x_val, y_val, resize_shape=resize_shape)
     train_loader = DataLoader(train_ds, batch_size=batch_sz, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=batch_sz, shuffle=False)
 
     # compile model
-    model = UNetGrayscale()
+    model = UNet()
     model.to(device=device)
 
     # init model training parameters
-    # class_weight_alpha = estimate_class_weight(y_train, resize_shape=resize_shape)
-    # print("Class weight alpha: {}".format(class_weight_alpha))
-    class_weight_alpha = 0.75
-    loss_fn = FocalBCELoss(alpha=class_weight_alpha, gamma=2.0)
+    loss_fn = torch.nn.BCELoss()
     optimizer = optim.Adam(params=model.parameters(), lr=lr, weight_decay=wd)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)
 
