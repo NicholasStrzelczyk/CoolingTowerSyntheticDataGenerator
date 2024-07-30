@@ -95,4 +95,4 @@ if __name__ == '__main__':
 	dust_icon_path = './image_files/dust1.png'
 
 	# --- --- --- #
-	gen_synth_data()
+	gen_synth_data(data_dir, part, dust_icon_path)
