@@ -97,10 +97,11 @@ if __name__ == '__main__':
     n_epochs = 20  # num of epochs
     batch_sz = 2  # batch size (2 works best on gpu)
     lr = 0.0001  # learning rate
-    wd = 0.00001  # weight decay
-    resize_shape = (512, 512)
+    # wd = 0.00001  # weight decay
+    momentum = 0.99  # used in U-Net paper
+    resize_shape = (512, 512)  # used in U-Net paper for training
     list_path, save_path = get_os_dependent_paths(model_version, partition='train')
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # set up dataset(s)
     x_train, y_train, x_val, y_val = get_data_from_list(list_path, split=0.2)
@@ -115,8 +116,8 @@ if __name__ == '__main__':
 
     # init model training parameters
     loss_fn = torch.nn.BCELoss()
-    # loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = optim.Adam(params=model.parameters(), lr=lr, weight_decay=wd)
+    # optimizer = optim.Adam(params=model.parameters(), lr=lr, weight_decay=wd)
+    optimizer = optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)  # SGD used in U-Net paper
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)
 
     # run torch summary report

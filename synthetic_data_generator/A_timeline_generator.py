@@ -117,7 +117,7 @@ if __name__ == '__main__':
 	num_data_days = 28
 	cleaning_period = 12
 	data_dir = '/Users/nick_1/Bell_5G_Data/synth_datasets'
-	part = Partition.TRAIN
+	part = Partition.TEST
 
 	# --- --- --- #
 	gen_time_series_data(data_dir, part, num_data_days, cleaning_period)

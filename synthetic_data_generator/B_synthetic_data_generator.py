@@ -91,7 +91,7 @@ def gen_synth_data(
 if __name__ == '__main__':
 	# hyperparameters
 	data_dir = '/Users/nick_1/Bell_5G_Data/synth_datasets'
-	part = Partition.TRAIN
+	part = Partition.TEST
 	dust_icon_path = './image_files/dust1.png'
 
 	# --- --- --- #
