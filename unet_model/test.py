@@ -68,8 +68,8 @@ def test(model, loss_fn, test_loader, device):
 
 if __name__ == '__main__':
     # hyperparameters
-    model_version = 3
-    resize_shape = (1024, 1024)
+    model_version = 1
+    resize_shape = (512, 512)
     list_path, save_path = get_os_dependent_paths(model_version, partition='test')
     weights_file = os.path.join(save_path, "model_{}_weights.pth".format(model_version))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

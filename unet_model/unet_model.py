@@ -18,7 +18,8 @@ class UNet(nn.Module):
         self.up3 = (Up(256, 128))
         self.up4 = (Up(128, 64))
         self.outc = (OutConv(64, 1))
-        self.softmax = nn.Softmax()
+        # self.softmax = nn.Softmax()
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x1 = self.inc(x)
@@ -31,4 +32,4 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         x = self.outc(x)
-        return self.softmax(x)
+        return self.sigmoid(x)

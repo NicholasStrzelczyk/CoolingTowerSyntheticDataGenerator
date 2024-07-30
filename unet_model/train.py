@@ -98,7 +98,7 @@ if __name__ == '__main__':
     batch_sz = 2  # batch size (2 works best on gpu)
     lr = 0.0001  # learning rate
     wd = 0.00001  # weight decay
-    resize_shape = (1024, 1024)
+    resize_shape = (512, 512)
     list_path, save_path = get_os_dependent_paths(model_version, partition='train')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -115,6 +115,7 @@ if __name__ == '__main__':
 
     # init model training parameters
     loss_fn = torch.nn.BCELoss()
+    # loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(params=model.parameters(), lr=lr, weight_decay=wd)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)
 
