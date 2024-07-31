@@ -1,16 +1,12 @@
-import os
 from datetime import datetime
 
-import numpy as np
-import torch
-from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
 from tqdm import tqdm
 
 from custom_ds import CustomDS
 from unet_model import UNet
-from utils.data_helper import get_data_from_list, get_os_dependent_paths
+from utils.helper import *
 
 
 def test(model, loss_fn, test_loader, device):
@@ -51,8 +47,8 @@ def test(model, loss_fn, test_loader, device):
             del image, target, output
 
     # --- print epoch results --- #
-    print("{} testing metrics:".format(datetime.now()))
-    print("\tloss: {:.9f}, precision: {:.9f}, recall: {:.9f}, f1_score: {:.9f}".format(
+    log_and_print("{} testing metrics:".format(datetime.now()))
+    log_and_print("\tloss: {:.9f}, precision: {:.9f}, recall: {:.9f}, f1_score: {:.9f}".format(
         test_loss / len(test_loader), test_bp / len(test_loader),
         test_br / len(test_loader), test_bf1 / len(test_loader)))
 
@@ -73,6 +69,12 @@ if __name__ == '__main__':
     list_path, save_path = get_os_dependent_paths(model_version, partition='test')
     weights_file = os.path.join(save_path, "model_{}_weights.pth".format(model_version))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # set deterministic seed
+    make_deterministic(2024)
+
+    # initialize console logger
+    setup_logger(os.path.join(save_path, 'testing.log'))
 
     # set up dataset(s)
     x_test, y_test, _, _ = get_data_from_list(list_path, split=None)

@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from custom_ds import CustomDS
 from unet_model import UNet
-from utils.data_helper import get_os_dependent_paths, get_data_from_list, print_metric_plots
+from utils.helper import *
 
 
 def train(model, loss_fn, optimizer, scheduler, train_loader, val_loader, n_epochs, device):
@@ -74,10 +74,10 @@ def train(model, loss_fn, optimizer, scheduler, train_loader, val_loader, n_epoc
         f1_val.append(epoch_bf1 / len(val_loader))
 
         # --- print epoch results --- #
-        print("{} epoch {}/{} metrics:".format(datetime.now(), epoch + 1, n_epochs))
-        print("\t[train] loss: {:.9f}, precision: {:.9f}, recall: {:.9f}, f1_score: {:.9f}".format(
+        log_and_print("{} epoch {}/{} metrics:".format(datetime.now(), epoch + 1, n_epochs))
+        log_and_print("\t[train] loss: {:.9f}, precision: {:.9f}, recall: {:.9f}, f1_score: {:.9f}".format(
             losses_train[epoch], precision_train[epoch], recall_train[epoch], f1_train[epoch]))
-        print("\t[valid] loss: {:.9f}, precision: {:.9f}, recall: {:.9f}, f1_score: {:.9f}".format(
+        log_and_print("\t[valid] loss: {:.9f}, precision: {:.9f}, recall: {:.9f}, f1_score: {:.9f}".format(
             losses_val[epoch], precision_val[epoch], recall_val[epoch], f1_val[epoch]))
 
     # --- save weights and plot metrics --- #
@@ -95,12 +95,18 @@ if __name__ == '__main__':
     # hyperparameters
     model_version = 1
     n_epochs = 20  # num of epochs
-    batch_sz = 2  # batch size (2 works best on gpu)
+    batch_sz = 1  # batch size
     lr = 0.0001  # learning rate
     momentum = 0.99  # used in U-Net paper
     resize_shape = (512, 512)  # used in U-Net paper for training
     list_path, save_path = get_os_dependent_paths(model_version, partition='train')
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+    # set deterministic seed
+    make_deterministic(2024)
+
+    # initialize logger
+    setup_logger(os.path.join(save_path, 'training.log'))
 
     # set up dataset(s)
     x_train, y_train, x_val, y_val = get_data_from_list(list_path, split=0.2)

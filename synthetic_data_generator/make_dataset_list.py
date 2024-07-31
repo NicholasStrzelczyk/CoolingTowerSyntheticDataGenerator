@@ -7,7 +7,7 @@ from synthetic_data_generator.utils.constants import *
 
 if __name__ == '__main__':
     # ----- hyperparameters ----- #
-    part = Partition.TRAIN
+    part = Partition.TEST
 
     #  ----- get data paths depending on platform ----- #
     if sys.platform == 'darwin':  # mac

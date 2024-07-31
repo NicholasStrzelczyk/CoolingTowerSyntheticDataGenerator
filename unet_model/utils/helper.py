@@ -1,8 +1,34 @@
+import logging
 import os
+import random
 import sys
 
+import numpy as np
+import torch
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
+
+
+def make_deterministic(seed):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(2024)
+    torch.use_deterministic_algorithms(True)
+
+
+def setup_logger(file_path):
+    logging.basicConfig(
+        filename=file_path,
+        filemode='w',
+        format="%(message)s",
+        level=logging.DEBUG,
+    )
+
+
+def log_and_print(msg):
+    logging.info(msg)
+    print(msg)
 
 
 def data_to_xy(data, seperator=" "):
