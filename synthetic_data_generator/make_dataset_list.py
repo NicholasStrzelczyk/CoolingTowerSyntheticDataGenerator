@@ -7,16 +7,17 @@ from synthetic_data_generator.synth_data_utils.constants import *
 
 if __name__ == '__main__':
     # ----- hyperparameters ----- #
-    part = Partition.TEST
+    part = Partition.TRAIN
 
     #  ----- get data paths depending on platform ----- #
     if sys.platform == 'darwin':  # mac
-        data_dir = "/Users/nick_1/Bell_5G_Data/synth_datasets/{}".format(part.value)
-        list_name = "list_{}.txt".format(sys.platform)
-    else:  # windows
-        data_dir = "C:\\Users\\NickS\\UWO_Summer_Research\\Bell_5G_Data\\synth_datasets\\{}".format(part.value)
-        list_name = "list_{}.txt".format(sys.platform)
+        data_dir = '/Users/nick_1/Bell_5G_Data/synth_datasets/{}'.format(part.value)
+    elif sys.platform == 'win32':  # windows
+        data_dir = 'C:\\Users\\NickS\\UWO_Summer_Research\\Bell_5G_Data\\synth_datasets\\{}'.format(part.value)
+    else:  # ubuntu
+        data_dir = '/mnt/storage_1/bell_5g_datasets/synth_datasets/{}'.format(part.value)
 
+    list_name = 'list_{}.txt'.format(sys.platform)
     list_file_path = os.path.join(data_dir, list_name)
     open(list_file_path, 'w+').close()  # overwrite/ make new blank file
 

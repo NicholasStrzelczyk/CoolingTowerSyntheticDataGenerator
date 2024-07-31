@@ -8,6 +8,8 @@ dust_icon_path = os.path.join(project_dir, 'synthetic_data_generator/image_files
 grate_mask_path = os.path.join(project_dir, 'synthetic_data_generator/image_files/metal_mask_v2.png')
 
 data_base_dir = '/Users/nick_1/Bell_5G_Data/synth_datasets'  # on macbook
+data_base_dir_ubuntu = '/mnt/storage_1/bell_5g_datasets/synth_datasets'  # ubuntu server
+data_base_dir_windows = 'C:\\Users\\NickS\\UWO_Summer_Research\\Bell_5G_Data\\synth_datasets'  # windows
 
 src_data_dir = os.path.join(data_base_dir, 'src_images')
 train_dataset_dir = os.path.join(data_base_dir, 'train')
