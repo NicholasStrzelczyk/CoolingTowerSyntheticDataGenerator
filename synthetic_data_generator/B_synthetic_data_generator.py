@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from synthetic_data_generator.utils.helper import *
+from synthetic_data_generator.synth_data_utils.helper import *
 
 
 def make_data_sc1_sc2(paths, dust_img, scenario):

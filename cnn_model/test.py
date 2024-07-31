@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from custom_ds import CustomDS
 from unet_model import UNet
-from utils.helper import *
+from cnn_utils.misc_util import *
 
 
 def test(model, loss_fn, test_loader, device):

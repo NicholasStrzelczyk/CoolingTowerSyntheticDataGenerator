@@ -1,4 +1,4 @@
-from utils.model_parts import *
+from cnn_utils.unet_model_parts import *
 
 
 # Based on code obtained from:

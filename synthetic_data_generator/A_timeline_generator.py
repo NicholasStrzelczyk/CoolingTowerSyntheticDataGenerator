@@ -2,7 +2,7 @@ from random import uniform
 
 from tqdm import tqdm
 
-from synthetic_data_generator.utils.helper import *
+from synthetic_data_generator.synth_data_utils.helper import *
 
 
 def gen_time_series_sc1_sc2(

@@ -1,4 +1,4 @@
-from synthetic_data_generator.utils.helper import *
+from synthetic_data_generator.synth_data_utils.helper import *
 
 col_headers = ['day', 'percent_fouling']
 

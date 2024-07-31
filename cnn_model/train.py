@@ -2,19 +2,22 @@ import os
 from datetime import datetime
 
 import torch
-from torch import optim
 from torch.utils.data import DataLoader
 from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRecall
 from torchsummary import summary
 from tqdm import tqdm
 
+from cnn_model.cnn_utils.data_import_util import get_data_from_list
+from cnn_model.cnn_utils.misc_util import print_metric_plots, get_os_dependent_paths, print_hyperparams
+from cnn_model.cnn_utils.optim_util import get_loss_fn, get_optimizer, get_scheduler
 from custom_ds import CustomDS
 from unet_model import UNet
-from utils.helper import *
+from utils.log_util import log_and_print, setup_basic_logger
+from utils.seed_util import get_random_seed, make_deterministic
 
 
 def train(model, loss_fn, optimizer, scheduler, train_loader, val_loader, n_epochs, device):
-    global model_version, save_path
+    global model_name, model_version, save_path
 
     precision = BinaryPrecision(threshold=0.5).to(device=device)
     recall = BinaryRecall(threshold=0.5).to(device=device)
@@ -26,7 +29,7 @@ def train(model, loss_fn, optimizer, scheduler, train_loader, val_loader, n_epoc
     f1_train, f1_val = [], []
 
     # --- iterate through all epochs --- #
-    print("{} starting training for model {}...".format(datetime.now(), model_version))
+    log_and_print("{} starting training...".format(datetime.now()))
     for epoch in range(n_epochs):
 
         # --- training step --- #
@@ -81,6 +84,7 @@ def train(model, loss_fn, optimizer, scheduler, train_loader, val_loader, n_epoc
             losses_val[epoch], precision_val[epoch], recall_val[epoch], f1_val[epoch]))
 
     # --- save weights and plot metrics --- #
+    log_and_print("{} saving weights and generating plots...".format(datetime.now()))
     torch.save(model.state_dict(), os.path.join(save_path, "model_{}_weights.pth".format(model_version)))
     metrics_history = [
         ("loss", losses_train, losses_val),
@@ -89,24 +93,36 @@ def train(model, loss_fn, optimizer, scheduler, train_loader, val_loader, n_epoc
         ("f1_score", f1_train, f1_val),
     ]
     print_metric_plots(metrics_history, model_version, save_path)
+    log_and_print("{} training complete.".format(datetime.now()))
 
 
 if __name__ == '__main__':
     # hyperparameters
+    model_name = 'basic_unet'
     model_version = 1
     n_epochs = 20  # num of epochs
     batch_sz = 1  # batch size
     lr = 0.0001  # learning rate
-    momentum = 0.99  # used in U-Net paper
+    wd = None  # optimizer weight decay (used for Adam)
+    momentum = 0.99  # optimizer momentum (used for SGD)
     resize_shape = (512, 512)  # used in U-Net paper for training
-    list_path, save_path = get_os_dependent_paths(model_version, partition='train')
+    loss_fn_name = 'binary_cross_entropy'
+    optimizer_name = 'sgd'
+    scheduler_name = 'reduce_on_plateau'
+    seed = get_random_seed()  # generate random seed
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    list_path, save_path = get_os_dependent_paths(model_version, partition='train')
 
-    # set deterministic seed
-    make_deterministic(2024)
+    # set up logger and deterministic seed
+    setup_basic_logger(os.path.join(save_path, 'training.log'))  # initialize logger
+    make_deterministic(seed)  # set deterministic seed
 
-    # initialize logger
-    setup_logger(os.path.join(save_path, 'training.log'))
+    # print training hyperparameters
+    print_hyperparams(
+        model_ver=model_version, model_name=model_name, num_epochs=n_epochs, batch_size=batch_sz, learn_rate=lr,
+        weight_decay=wd, momentum=momentum, resize_shape=resize_shape, loss_fn_name=loss_fn_name,
+        optimizer_name=optimizer_name, scheduler_name=scheduler_name, seed=seed, device=device
+    )
 
     # set up dataset(s)
     x_train, y_train, x_val, y_val = get_data_from_list(list_path, split=0.2)
@@ -120,9 +136,9 @@ if __name__ == '__main__':
     model.to(device=device)
 
     # init model training parameters
-    loss_fn = torch.nn.BCELoss()
-    optimizer = optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)  # SGD used in U-Net paper
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)  # not sure if needed
+    loss_fn = get_loss_fn(loss_fn_name)
+    optimizer = get_optimizer(optimizer_name, model.parameters(), lr, weight_decay=wd, momentum=momentum)
+    scheduler = get_scheduler(scheduler_name, optimizer)
 
     # run torch summary report
     summary(model, input_size=(3, resize_shape[0], resize_shape[1]))
