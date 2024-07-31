@@ -100,7 +100,7 @@ if __name__ == '__main__':
     model_name = 'basic_unet'
     model_version = 1
     n_epochs = 20  # num of epochs
-    batch_sz = 10  # batch size
+    batch_sz = 8  # batch size
     lr = 0.0001  # learning rate
     momentum = 0.99  # optimizer momentum (used for SGD)
     resize_shape = (512, 512)  # used in U-Net paper for training
