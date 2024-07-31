@@ -3,7 +3,7 @@ import sys
 
 from matplotlib import pyplot as plt
 
-from utils.log_util import log_and_print
+from log_util import log_and_print
 
 
 def get_os_dependent_paths(model_ver, partition):
