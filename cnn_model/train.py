@@ -109,7 +109,8 @@ if __name__ == '__main__':
     loss_fn_name = 'binary_cross_entropy'
     optimizer_name = 'sgd'
     scheduler_name = 'reduce_on_plateau'
-    seed = get_random_seed()  # generate random seed
+    # seed = get_random_seed()  # generate random seed
+    seed = 2024
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     list_path, save_path = get_os_dependent_paths(model_version, partition='train')
 
