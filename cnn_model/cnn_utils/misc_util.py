@@ -3,7 +3,9 @@ import sys
 
 from matplotlib import pyplot as plt
 
-from log_util import log_and_print
+from utils.log_util import log_and_print
+
+sys.path.append('../../')
 
 
 def get_os_dependent_paths(model_ver, partition):
