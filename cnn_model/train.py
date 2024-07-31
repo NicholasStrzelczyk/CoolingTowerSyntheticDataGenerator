@@ -7,9 +7,9 @@ from torchmetrics.classification import BinaryF1Score, BinaryPrecision, BinaryRe
 from torchsummary import summary
 from tqdm import tqdm
 
-from cnn_utils.data_import_util import get_data_from_list
-from cnn_utils.misc_util import print_metric_plots, get_os_dependent_paths, print_hyperparams
-from cnn_utils.optim_util import get_loss_fn, get_optimizer, get_scheduler
+from .cnn_utils.data_import_util import get_data_from_list
+from .cnn_utils.misc_util import print_metric_plots, get_os_dependent_paths, print_hyperparams
+from .cnn_utils.optim_util import get_loss_fn, get_optimizer, get_scheduler
 from custom_ds import CustomDS
 from unet_model import UNet
 from utils.log_util import log_and_print, setup_basic_logger
