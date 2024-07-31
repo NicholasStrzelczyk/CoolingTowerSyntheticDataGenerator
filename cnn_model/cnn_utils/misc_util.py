@@ -20,6 +20,11 @@ def get_os_dependent_paths(model_ver, partition):
         data_dir = '/mnt/storage_1/bell_5g_datasets/synth_datasets'
         list_path = os.path.join(data_dir, '{}/list_{}.txt'.format(partition, sys.platform))
         save_path = './cnn_model/model_{}'.format(model_ver)
+
+    # make the folder if it does not exist
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
     return list_path, save_path
 
 
