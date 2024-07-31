@@ -9,7 +9,6 @@ from tqdm import tqdm
 
 from .cnn_utils.data_import_util import get_data_from_list
 from .cnn_utils.misc_util import print_metric_plots, get_os_dependent_paths, print_hyperparams
-from .cnn_utils.optim_util import get_loss_fn, get_optimizer, get_scheduler
 from .custom_ds import CustomDS
 from .unet_model import UNet
 from utils.log_util import log_and_print, setup_basic_logger
@@ -101,9 +100,8 @@ if __name__ == '__main__':
     model_name = 'basic_unet'
     model_version = 1
     n_epochs = 20  # num of epochs
-    batch_sz = 1  # batch size
+    batch_sz = 6  # batch size
     lr = 0.0001  # learning rate
-    wd = None  # optimizer weight decay (used for Adam)
     momentum = 0.99  # optimizer momentum (used for SGD)
     resize_shape = (512, 512)  # used in U-Net paper for training
     loss_fn_name = 'binary_cross_entropy'
@@ -121,8 +119,8 @@ if __name__ == '__main__':
     # print training hyperparameters
     print_hyperparams(
         model_ver=model_version, model_name=model_name, num_epochs=n_epochs, batch_size=batch_sz, learn_rate=lr,
-        weight_decay=wd, momentum=momentum, resize_shape=resize_shape, loss_fn_name=loss_fn_name,
-        optimizer_name=optimizer_name, scheduler_name=scheduler_name, seed=seed, device=device
+        momentum=momentum, resize_shape=resize_shape, loss_fn_name=loss_fn_name, optimizer_name=optimizer_name,
+        scheduler_name=scheduler_name, seed=seed, device=device
     )
 
     # set up dataset(s)
@@ -137,9 +135,9 @@ if __name__ == '__main__':
     model.to(device=device)
 
     # init model training parameters
-    loss_fn = get_loss_fn(loss_fn_name)
-    optimizer = get_optimizer(optimizer_name, model.parameters(), lr, weight_decay=wd, momentum=momentum)
-    scheduler = get_scheduler(scheduler_name, optimizer)
+    loss_fn = torch.nn.BCELoss()
+    optimizer = torch.optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 
     # run torch summary report
     summary(model, input_size=(3, resize_shape[0], resize_shape[1]))
