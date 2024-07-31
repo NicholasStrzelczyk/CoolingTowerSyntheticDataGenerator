@@ -5,8 +5,6 @@ from matplotlib import pyplot as plt
 
 from utils.log_util import log_and_print
 
-sys.path.append('../../')
-
 
 def get_os_dependent_paths(model_ver, partition):
     assert (partition == 'train' or partition == 'test')
