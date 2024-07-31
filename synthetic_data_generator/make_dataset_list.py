@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 from tqdm import tqdm
 
-from synthetic_data_generator.synth_data_utils.constants import *
+from synth_data_utils.constants import *
 
 if __name__ == '__main__':
     # ----- hyperparameters ----- #

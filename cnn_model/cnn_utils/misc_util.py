@@ -1,11 +1,9 @@
 import os
 import sys
 
-import torch
 from matplotlib import pyplot as plt
-from torch import optim
 
-from utils.log_util import log_and_print, log
+from utils.log_util import log_and_print
 
 
 def get_os_dependent_paths(model_ver, partition):
