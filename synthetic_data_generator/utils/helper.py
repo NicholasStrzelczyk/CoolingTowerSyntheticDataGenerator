@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from synthetic_data_generator.synth_data_utils.constants import *
+from synthetic_data_generator.utils.constants import *
 
 
 # ----- Utility Methods ----- #

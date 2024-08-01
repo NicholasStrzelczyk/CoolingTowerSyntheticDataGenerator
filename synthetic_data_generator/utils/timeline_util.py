@@ -2,8 +2,8 @@ import csv
 
 import pandas as pd
 
-from synthetic_data_generator.synth_data_utils.constants import *
-from synthetic_data_generator.synth_data_utils.fouling_growth import growth_percent_to_vig_strength
+from synthetic_data_generator.utils.constants import *
+from synthetic_data_generator.utils.fouling_growth import growth_percent_to_vig_strength
 
 
 def timeline_to_csv(timeline_data, scenario_num, data_dir):

@@ -2,7 +2,7 @@ from random import randint
 
 import cv2
 
-from synthetic_data_generator.synth_data_utils.constants import *
+from synthetic_data_generator.utils.constants import *
 
 
 def vig_strength_to_growth_percent(val):

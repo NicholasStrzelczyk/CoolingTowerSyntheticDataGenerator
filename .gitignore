@@ -6,3 +6,6 @@
 # files that are too large to upload
 *.pth
 *_predictions.png
+
+# old code
+AAA_old_code/
