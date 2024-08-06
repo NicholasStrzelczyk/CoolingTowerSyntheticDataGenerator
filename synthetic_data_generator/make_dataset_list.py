@@ -7,7 +7,7 @@ from utils.constants import *
 
 if __name__ == '__main__':
     # ----- hyperparameters ----- #
-    part = Partition.TEST
+    part = Partition.VAL
 
     #  ----- get data paths depending on platform ----- #
     if sys.platform == 'darwin':  # mac
