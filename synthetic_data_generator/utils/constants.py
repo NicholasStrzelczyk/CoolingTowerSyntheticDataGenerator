@@ -37,3 +37,4 @@ csv_headers_sc3_sc4 = [
 class Partition(Enum):
 	TRAIN = 'train'
 	TEST = 'test'
+	VAL = 'validation'
