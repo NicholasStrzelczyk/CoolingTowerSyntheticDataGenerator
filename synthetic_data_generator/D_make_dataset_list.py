@@ -5,27 +5,19 @@ from tqdm import tqdm
 
 from utils.constants import *
 
-if __name__ == '__main__':
-    # ----- hyperparameters ----- #
-    part = Partition.VAL
 
-    #  ----- get data paths depending on platform ----- #
-    if sys.platform == 'darwin':  # mac
-        data_dir = '/Users/nick_1/Bell_5G_Data/synth_datasets/{}'.format(part.value)
-    elif sys.platform == 'win32':  # windows
-        data_dir = 'C:\\Users\\NickS\\UWO_Summer_Research\\Bell_5G_Data\\synth_datasets\\{}'.format(part.value)
-    else:  # ubuntu
-        data_dir = '/mnt/storage_1/bell_5g_datasets/synth_datasets/{}'.format(part.value)
+def make_platform_ds_list(data_dir, partition):
+    base_path = os.path.join(data_dir, str(partition.value))
 
-    list_name = 'list_{}.txt'.format(sys.platform)
-    list_file_path = os.path.join(data_dir, list_name)
+    list_name = 'list.txt'
+    list_file_path = os.path.join(base_path, list_name)
     open(list_file_path, 'w+').close()  # overwrite/ make new blank file
 
     # ----- begin generating list ----- #
     list_file = open(list_file_path, "a")
 
-    for scenario in tqdm(range(1, 5), desc='Generating data lists'):
-        scenario_dir = os.path.join(data_dir, "scenario_{}".format(scenario))
+    for scenario in tqdm(range(1, 5), desc='Creating dataset list'):
+        scenario_dir = os.path.join(base_path, "scenario_{}".format(scenario))
         total_days = pd.read_csv(os.path.join(scenario_dir, "timeline.csv"))['day'].values[-1]
 
         for day in range(1, total_days + 1):
@@ -40,3 +32,13 @@ if __name__ == '__main__':
                     list_file.write(img_path + " " + tgt_path + "\n")
 
     list_file.close()
+
+
+if __name__ == '__main__':
+    # ----- hyperparameters ----- #
+    part = Partition.VAL
+    data_dir_path = '/Users/nick_1/Bell_5G_Data/synth_datasets_2'
+
+    # ----- ----- ----- #
+    make_platform_ds_list(data_dir_path, part)
+

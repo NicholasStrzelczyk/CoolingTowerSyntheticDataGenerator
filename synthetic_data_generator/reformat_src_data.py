@@ -5,6 +5,8 @@ from datetime import date, timedelta
 import pandas as pd
 from tqdm import tqdm
 
+from synthetic_data_generator.utils.constants import hour_list
+
 
 def exists_in_dir(f_str, dir_path):
 	exists = False
@@ -21,16 +23,12 @@ def copy_paste_buffer(buf):
 
 if __name__ == '__main__':
 	# hyperparameters
-	start_date = date(2024, 6, 13)  # range: 06-13 to 07-14 (inclusively)
-	end_date = date(2024, 7, 15)  # end date is not inclusive
+	start_date = date(2024, 6, 26)  # range: 06-13 to 08-12 (inclusively)
+	end_date = date(2024, 7, 11)  # end date is not inclusive
 	src_dir = '/Users/nick_1/Bell_5G_Data/all_1080_data/'
-	dest_dir = '/Users/nick_1/Bell_5G_Data/synth_datasets/src_images'
+	dest_dir = '/Users/nick_1/Bell_5G_Data/rand_spots_ds/src_images'
 
 	# time and date lists
-	hour_list = [
-		'6am', '7am', '8am', '9am', '10am', '11am', '12pm',
-		'1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm'
-	]
 	date_range_list = pd.date_range(start_date, end_date - timedelta(days=1), freq='d').to_list()
 
 	# --- obtain path for image and copy/ rename it --- #

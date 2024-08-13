@@ -1,12 +1,14 @@
+from tqdm import tqdm
+
 from synthetic_data_generator.utils.helper import *
 
 col_headers = ['day', 'percent_fouling']
 
 
 def quantify_scenario_fouling(data_dir_path, partition):
-	dataset_dir = os.path.join(data_dir_path, partition.value)
+	dataset_dir = os.path.join(data_dir_path, str(partition.value))
 
-	for sc in range(1, 5):
+	for sc in tqdm(range(1, 5), desc='Quantifying Fouling for each Scenario'):
 		# create paths
 		scenario_path = os.path.join(dataset_dir, 'scenario_{}'.format(sc))
 		targets_path = os.path.join(scenario_path, 'targets')

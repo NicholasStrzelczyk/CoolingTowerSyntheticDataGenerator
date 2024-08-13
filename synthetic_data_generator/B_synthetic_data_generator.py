@@ -6,7 +6,7 @@ from synthetic_data_generator.utils.helper import *
 def make_data_sc1_sc2(paths, dust_img, scenario):
 	csv_data = interpret_sc1_sc2_csv(paths['csv'])
 
-	for day in tqdm(range(1, csv_data['total_days'] + 1), desc='Generating images for scenario {}/4'.format(scenario)):
+	for day in tqdm(range(1, csv_data['total_days'] + 1), desc='Generating images for scenario {}'.format(scenario)):
 		dust_cloud = make_dust_cloud(dust_img, csv_data, day - 1)
 		pt1, pt2 = get_img_slice_pts(dust_cloud, csv_data, day - 1)
 
@@ -34,7 +34,7 @@ def make_data_sc1_sc2(paths, dust_img, scenario):
 def make_data_sc3_sc4(paths, dust_img, scenario):
 	csv_dicts = interpret_sc3_sc4_csv(paths['csv'])
 
-	for day in tqdm(range(1, csv_dicts[0]['total_days'] + 1), desc='Generating images for scenario {}/4'.format(scenario)):
+	for day in tqdm(range(1, csv_dicts[0]['total_days'] + 1), desc='Generating images for scenario {}'.format(scenario)):
 
 		# Part A: create list of dust cloud data for current day
 		dust_clouds = []
