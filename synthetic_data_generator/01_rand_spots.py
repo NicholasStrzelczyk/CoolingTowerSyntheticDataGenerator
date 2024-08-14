@@ -4,12 +4,13 @@ from datetime import datetime
 from random import uniform
 
 import cv2
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from synthetic_data_generator.B_synthetic_data_generator import make_data_sc3_sc4
 from synthetic_data_generator.utils.constants import Partition, hour_list, csv_headers_sc3_sc4
-from synthetic_data_generator.utils.helper import get_scenario_paths, get_growth_bounds, gen_dust_variables
+from synthetic_data_generator.utils.helper import get_scenario_paths, get_growth_bounds, gen_dust_variables, \
+	interpret_sc3_sc4_csv, make_dust_cloud, get_img_slice_pts, denoise_to_binary, apply_synth_transparent_dust
 
 
 def make_folders(root_dir, partition, num_scenarios):
@@ -56,7 +57,36 @@ def make_dataset_images(root_dir, partition, dust_im_path, num_scenarios):
 	for scenario_num in range(1, num_scenarios + 1):
 		paths = get_scenario_paths(root_dir, partition, scenario_num)
 		dust_img = cv2.imread(dust_im_path, cv2.IMREAD_COLOR)
-		make_data_sc3_sc4(paths, dust_img, scenario_num)
+		csv_dicts = interpret_sc3_sc4_csv(paths['csv'])
+
+		for day in tqdm(range(1, csv_dicts[0]['total_days'] + 1), desc='Generating scenario {} images'.format(scenario_num)):
+			# Part A: create list of dust cloud data for current day
+			dust_clouds = []
+			for deg_spot_data in csv_dicts:
+				dust_cloud = make_dust_cloud(dust_img, deg_spot_data, day - 1)
+				pt1, pt2 = get_img_slice_pts(dust_cloud, deg_spot_data, day - 1)
+				dust_clouds.append((dust_cloud, pt1, pt2))
+
+			# Part B: create synth label for current day
+			label_img = np.zeros((1080, 1920, 3), dtype=np.uint8)  # blank image
+			for dust_cloud, pt1, pt2 in dust_clouds:  # apply each dust cloud
+				label_img[pt1[1]:pt2[1], pt1[0]:pt2[0]] = dust_cloud  # insert dust cloud to label
+			label_img = denoise_to_binary(label_img)  # denoise & convert to b/w
+			label_save_path = os.path.join(paths['label'], 'LABEL_day_{}.png'.format(day))
+			cv2.imwrite(label_save_path, label_img.astype(np.uint8))  # save synthetic label
+
+			# Part C: generate synth image for each valid hour of current day
+			for hour in hour_list:
+				raw_img_name = 'day_{}_{}.png'.format(day, hour)
+				raw_img_path = os.path.join(paths['src'], raw_img_name)
+				synth_img_save_path = os.path.join(paths['img'], 'SYNTH_{}'.format(raw_img_name))
+				if os.path.isfile(raw_img_path):  # skip over missing data
+					image = cv2.imread(raw_img_path, cv2.IMREAD_COLOR)  # read raw img file
+					for dust_cloud, pt1, pt2 in dust_clouds:  # apply each dust cloud
+						image_slice = image[pt1[1]:pt2[1], pt1[0]:pt2[0]]  # cut out RoI for modification
+						image_slice = apply_synth_transparent_dust(image_slice, dust_cloud)  # apply dust cloud to RoI
+						image[pt1[1]:pt2[1], pt1[0]:pt2[0]] = image_slice  # re-insert edited RoI
+					cv2.imwrite(synth_img_save_path, image.astype(np.uint8))  # save synthetic img
 
 
 def make_dataset_list(root_dir, partition, num_scenarios):
@@ -73,8 +103,8 @@ def make_dataset_list(root_dir, partition, num_scenarios):
 			for hour in hour_list:
 				image_name = "SYNTH_day_{}_{}.png".format(day, hour)
 				if os.path.exists(os.path.join(scenario_dir, "images", image_name)):  # skip over missing hours
-					img_path = os.path.join("scenario_{}".format(scenario), "images", image_name)
-					tgt_path = os.path.join("scenario_{}".format(scenario), "targets", label_name)
+					img_path = os.path.join(str(partition.value), "scenario_{}".format(scenario), "images", image_name)
+					tgt_path = os.path.join(str(partition.value), "scenario_{}".format(scenario), "targets", label_name)
 					list_file.write(img_path + " " + tgt_path + "\n")
 	list_file.close()
 

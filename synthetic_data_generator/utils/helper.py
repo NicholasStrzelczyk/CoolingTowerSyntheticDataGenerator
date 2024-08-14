@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from synthetic_data_generator.utils.constants import *
+from synthetic_data_generator.utils.cv_util import transparent_background
 
 
 # ----- Utility Methods ----- #
@@ -165,6 +166,29 @@ def apply_synthetic_dust_basic(raw_img, deg_img):
 					result[y, x, c] = deg_img[y, x, c]  # color pixel same as deg_img
 				else:  # else this pixel belongs to the foreground of raw img (the metal)
 					result[y, x, c] = raw_img[y, x, c]  # color pixel same as raw img
+	return result
+
+
+def apply_synth_transparent_dust(raw_img, deg_img):
+	transparent = transparent_background(deg_img)  # make dust background transparent
+	_, _, _, alphas = cv2.split(transparent)  # separate alpha channel
+	alphas = alphas.astype(np.float32)  # convert to float values
+	alphas *= (1 / 255.0)  # normalize alphas
+
+	gray = cv2.cvtColor(raw_img, cv2.COLOR_BGR2GRAY)
+	thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)[0]  # OTSU for raw img
+	result = np.zeros(raw_img.shape, np.uint8)
+
+	for y in range(result.shape[0]):  # loop through pixels in y-axis
+		for x in range(result.shape[1]):  # loop through pixels in x-axis
+			for c in range(result.shape[2]):  # loop through color channels
+
+				if gray[y, x] < thresh:  # if this pixel belongs to the background of raw img (not metal)
+					# color pixel according to transparency alpha
+					result[y, x, c] = ((1 - alphas[y, x]) * raw_img[y, x, c]) + (alphas[y, x] * deg_img[y, x, c])
+				else:  # else this pixel belongs to the foreground of raw img (the metal)
+					result[y, x, c] = raw_img[y, x, c]  # color pixel same as raw img
+
 	return result
 
 

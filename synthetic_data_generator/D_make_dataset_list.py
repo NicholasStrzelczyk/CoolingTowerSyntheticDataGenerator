@@ -1,5 +1,3 @@
-import sys
-
 import pandas as pd
 from tqdm import tqdm
 
@@ -27,8 +25,8 @@ def make_platform_ds_list(data_dir, partition):
                 image_name = "SYNTH_day_{}_{}.png".format(day, hour)
 
                 if os.path.exists(os.path.join(scenario_dir, "images", image_name)):  # skip over missing hours
-                    img_path = os.path.join(scenario_dir, "images", image_name)
-                    tgt_path = os.path.join(scenario_dir, "targets", label_name)
+                    img_path = os.path.join(str(partition.value), "scenario_{}".format(scenario), "images", image_name)
+                    tgt_path = os.path.join(str(partition.value), "scenario_{}".format(scenario), "targets", label_name)
                     list_file.write(img_path + " " + tgt_path + "\n")
 
     list_file.close()
@@ -36,8 +34,8 @@ def make_platform_ds_list(data_dir, partition):
 
 if __name__ == '__main__':
     # ----- hyperparameters ----- #
-    part = Partition.VAL
-    data_dir_path = '/Users/nick_1/Bell_5G_Data/synth_datasets_2'
+    part = Partition.TRAIN
+    data_dir_path = '/Users/nick_1/Bell_5G_Data/synth_datasets'
 
     # ----- ----- ----- #
     make_platform_ds_list(data_dir_path, part)

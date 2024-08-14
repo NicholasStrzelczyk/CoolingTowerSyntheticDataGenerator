@@ -58,3 +58,12 @@ def denoise_to_binary(img):
 	result = cv2.fastNlMeansDenoising(result, None, 20, 7, 21)
 	result = cv2.threshold(result, 0, 255, cv2.THRESH_OTSU)[1]
 	return result
+
+
+def transparent_background(img):
+	tmp = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	_, alpha = cv2.threshold(tmp, 0, 255, cv2.THRESH_BINARY)
+	b, g, r = cv2.split(img)
+	rgba = [b, g, r, alpha]
+	result = cv2.merge(rgba, 4)
+	return result
